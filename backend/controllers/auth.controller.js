@@ -1,8 +1,8 @@
-import User from "../models/user.model";
+import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import genToken from "../utils/token.js";
 
-const signUp = async (req, res) => {
+export const signUp = async (req, res) => {
   try {
     const { fullName, email, password, mobile, role } = req.body;
 
@@ -44,7 +44,7 @@ const signUp = async (req, res) => {
   }
 };
 
-const signIn = async (req, res) => {
+export const signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -72,7 +72,7 @@ const signIn = async (req, res) => {
   }
 };
 
-const signOut = async (req, res) => {
+export const signOut = async (req, res) => {
   try {
     res.clearCookie("token");
     return res.status(200).json(user);
