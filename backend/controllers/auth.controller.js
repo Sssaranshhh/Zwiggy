@@ -46,16 +46,16 @@ const signUp = async (req, res) => {
 
 const signIn = async (req, res) => {
   try {
-    const {email, password } = req.body;
+    const { email, password } = req.body;
 
     const user = await User.findOne(email);
     if (!user) {
       return res.status(400).json({ message: "User doesn't exist" });
     }
 
-    const isMatch = bcrypt.compare(password, user.password)
-    if(!isMatch){
-        return res.status(400).json({message: "Incorrect Password"});
+    const isMatch = bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect Password" });
     }
 
     const token = await genToken(user._id);
@@ -65,9 +65,20 @@ const signIn = async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     });
-   
+
     return res.status(200).json(user);
   } catch (err) {
     return res.status(500).json(`Error in signIn: ${err} in auth.controller`);
+  }
+};
+
+const signOut = async (req, res) => {
+  try {
+    res.clearCookie("token");
+    return res.status(200).json(user);
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: `Error in signOut: ${err} in auth.controller` });
   }
 };
