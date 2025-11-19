@@ -19,7 +19,17 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("User");
 
-  
+  const handleSignUp = async () => {
+    try {
+      const result = await axios.post(`${serverUrl}/api/auth/signup`, {
+        fullName, email, password, mobile, role
+      }, {withCredentials: true});
+      console.log(result);
+    } catch (err) {
+     console.log("Error details:", err.response?.data);
+     console.log("Status:", err.response?.status);
+    }
+  }
 
   return (
     <div
@@ -142,6 +152,7 @@ export default function SignUp() {
         <button
           className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white hover:bg-[#e64323]"
           style={{ backgroundColor: primaryColor }}
+          onClick={handleSignUp}
         >
           Sign Up
         </button>
