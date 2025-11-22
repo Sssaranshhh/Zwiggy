@@ -127,10 +127,10 @@ export const resetPassword = async (req,res) => {
     if(!user || !user.isOtpVerified){
       return res.status(400).json({ message: "Otp verification required" });
     }
-    const hashedPassword = await bcrypt.hash(newPassword);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
-    return res.status(200).json(message: "Password reset successfull");
+    return res.status(200).json({message: "Password reset successfull"});
   } catch (err) {
     return res.status(500).json({message: "Error while resetting password: ", err});
   }

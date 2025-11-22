@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import axios from "axios";
+import { serverUrl } from "../App";
 
 export default function ForgotPassword() {
-    
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -12,6 +13,60 @@ export default function ForgotPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSendOtp = async () => {
+    try {
+      const result = await axios.post(
+        `${serverUrl}/api/auth/send-otp`,
+        {
+          email,
+        },
+        { withCredentials: true }
+      );
+      console.log(result);
+      setStep(2);
+    } catch (err) {
+      console.log("Error details:", err.response?.data);
+      console.log("Status:", err.response?.status);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      const result = await axios.post(
+        `${serverUrl}/api/auth/verify-otp`,
+        {
+          email,
+          otp,
+        },
+        { withCredentials: true }
+      );
+      console.log(result);
+      setStep(3);
+    } catch (err) {
+      console.log("Error details: ", err.response?.data);
+      console.log("Status: ", err.response?.status);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (newPassword != confirmPassword) return null;
+    try {
+      const result = await axios.post(
+        `${serverUrl}/api/auth/reset-password`,
+        {
+          email,
+          newPassword,
+        },
+        { withCredentials: true }
+      );
+      navigate("/signin");
+      console.log(result)
+    } catch (err) {
+      console.log("Error details: ", err.response?.data);
+      console.log("Status: ", err.response?.status);
+    }
+  };
 
   return (
     <div className="flex w-full items-center justify-center min-h-screen p-4 bg-[#fff9f6]">
@@ -43,10 +98,8 @@ export default function ForgotPassword() {
                 value={email}
               />
             </div>
-            <button
-              className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
-              onClick={() => setStep(2)}
-            >
+            <button className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
+            onClick={handleSendOtp}>
               Send OTP
             </button>
           </div>
@@ -70,10 +123,8 @@ export default function ForgotPassword() {
                 value={otp}
               />
             </div>
-            <button
-              className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
-              onClick={() => setStep(3)}
-            >
+            <button className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
+            onClick={handleVerifyOtp} >
               Submit
             </button>
           </div>
@@ -133,7 +184,8 @@ export default function ForgotPassword() {
                 </button>
               </div>
             </div>
-            <button className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]">
+            <button className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
+            onClick={handleResetPassword}>
               Reset Password
             </button>
           </div>

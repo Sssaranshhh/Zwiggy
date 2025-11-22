@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
         enum: ["User", "Owner", "Delivery Partner"],
         required: true
     },
-    resetOtp: string,
+    resetOtp: String,
     
     isOtpVerified: {
       type: Boolean,
