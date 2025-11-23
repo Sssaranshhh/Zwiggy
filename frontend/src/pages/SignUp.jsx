@@ -4,6 +4,9 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverUrl } from "../App";
+import { auth } from "../../firebase.js";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { ClipLoader } from "react-spinners";
 
 export default function SignUp() {
   const primaryColor = "#ff4d2d";
@@ -18,18 +21,56 @@ export default function SignUp() {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("User");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
     try {
-      const result = await axios.post(`${serverUrl}/api/auth/signup`, {
-        fullName, email, password, mobile, role
-      }, {withCredentials: true});
+      const result = await axios.post(
+        `${serverUrl}/api/auth/signup`,
+        {
+          fullName,
+          email,
+          password,
+          mobile,
+          role,
+        },
+        { withCredentials: true }
+      );
       console.log(result);
+      setError("");
     } catch (err) {
-     console.log("Error details:", err.response?.data);
-     console.log("Status:", err.response?.status);
+      setError(err?.response?.data?.message);
     }
-  }
+  };
+
+  const handleGoogleAuth = async () => {
+    if (!mobile) {
+      return setError("Mobile No is required!");
+    }
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    console.log(result);
+    try {
+      const { data } = await axios.post(
+        `${serverUrl}/api/auth/google-auth`,
+        {
+          fullName: result.user.displayName,
+          email: result.user.email,
+          mobile,
+          role,
+        },
+        { withCredentials: true }
+      );
+      console.log(data);
+      setError("");
+      setLoading(false);
+    } catch (err) {
+      setError(err?.response?.data?.message);
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -153,11 +194,17 @@ export default function SignUp() {
           className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white hover:bg-[#e64323]"
           style={{ backgroundColor: primaryColor }}
           onClick={handleSignUp}
+          disabled={loading}
         >
-          Sign Up
+          {loading ? <ClipLoader size={20} color="white" /> : "Sign Up"}
         </button>
 
-        <button className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-gray-400 hover:bg-gray-100 cursor-pointer">
+        {error && <p className="text-red-500 text-center my-2.5">*{error}</p>}
+
+        <button
+          className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-gray-400 hover:bg-gray-100 cursor-pointer"
+          onClick={handleGoogleAuth}
+        >
           <FcGoogle size={20} />
           <span>SignUp with Google</span>
         </button>

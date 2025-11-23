@@ -93,7 +93,7 @@ export const sendOtp = async (req,res) => {
     }
     const otp =  Math.floor(100000 + Math.random()*900000).toString();
     user.resetOtp = otp;
-    user.OtpExpires = Date.now() + 10*60*1000;
+    user.otpExpires = Date.now() + 10*60*1000;
     user.isOtpVerified = false;
     await user.save();
     await sendMailOtp(user.email,otp);
@@ -133,5 +133,28 @@ export const resetPassword = async (req,res) => {
     return res.status(200).json({message: "Password reset successfull"});
   } catch (err) {
     return res.status(500).json({message: "Error while resetting password: ", err});
+  }
+} 
+
+export const googleAuth = async (req,res) => {
+  try {
+    const {fullName, email, mobile, role} = req.body;
+    let user = await User.findOne({email});
+    if(!user){
+      user = await User.create({
+        fullName, email, mobile, role
+      })
+    }
+
+    const token = genToken(user._id);
+    res.cookie( "token", token, {
+      secure: false,
+      sameSite: "strict",
+      maxAge: 30*24*60*60*1000,
+      httpOnly: true
+    })
+    return res.status(200).json({user});
+  } catch (err) {
+    return res.status(500).json(`google auth error: ${err}`)
   }
 }

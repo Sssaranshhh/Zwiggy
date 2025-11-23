@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import { serverUrl } from "../App";
+import { ClipLoader } from "react-spinners";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -13,8 +14,11 @@ export default function ForgotPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSendOtp = async () => {
+    setLoading(true);
     try {
       const result = await axios.post(
         `${serverUrl}/api/auth/send-otp`,
@@ -25,13 +29,16 @@ export default function ForgotPassword() {
       );
       console.log(result);
       setStep(2);
+      setError("");
+      setLoading(false);
     } catch (err) {
-      console.log("Error details:", err.response?.data);
-      console.log("Status:", err.response?.status);
+      setError(err?.response?.data?.message);
+      setLoading(false);
     }
   };
 
   const handleVerifyOtp = async () => {
+    setLoading(true);
     try {
       const result = await axios.post(
         `${serverUrl}/api/auth/verify-otp`,
@@ -43,14 +50,17 @@ export default function ForgotPassword() {
       );
       console.log(result);
       setStep(3);
+      setError("");
+      setLoading(false);
     } catch (err) {
-      console.log("Error details: ", err.response?.data);
-      console.log("Status: ", err.response?.status);
+      setError(err?.response?.data?.message);
+      setLoading(false);
     }
   };
 
   const handleResetPassword = async () => {
     if (newPassword != confirmPassword) return null;
+    setLoading(true);
     try {
       const result = await axios.post(
         `${serverUrl}/api/auth/reset-password`,
@@ -61,10 +71,12 @@ export default function ForgotPassword() {
         { withCredentials: true }
       );
       navigate("/signin");
-      console.log(result)
+      console.log(result);
+      setError("");
+      setLoading(false);
     } catch (err) {
-      console.log("Error details: ", err.response?.data);
-      console.log("Status: ", err.response?.status);
+      setError(err?.response?.data?.message);
+      setLoading(false);
     }
   };
 
@@ -98,10 +110,16 @@ export default function ForgotPassword() {
                 value={email}
               />
             </div>
-            <button className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
-            onClick={handleSendOtp}>
-              Send OTP
+            <button
+              className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
+              onClick={handleSendOtp}
+              disabled={loading}
+            >
+              {loading ? <ClipLoader size={20} color="white" /> : "Submit"}
             </button>
+            {error && (
+              <p className="text-red-500 text-center my-2.5">*{error}</p>
+            )}
           </div>
         )}
 
@@ -123,10 +141,16 @@ export default function ForgotPassword() {
                 value={otp}
               />
             </div>
-            <button className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
-            onClick={handleVerifyOtp} >
-              Submit
+            <button
+              className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
+              onClick={handleVerifyOtp}
+              disabled={loading}
+            >
+              {loading ? <ClipLoader size={20} color="white" /> : "Verify"}
             </button>
+            {error && (
+              <p className="text-red-500 text-center my-2.5">*{error}</p>
+            )}
           </div>
         )}
 
@@ -184,10 +208,20 @@ export default function ForgotPassword() {
                 </button>
               </div>
             </div>
-            <button className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
-            onClick={handleResetPassword}>
-              Reset Password
+            <button
+              className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white bg-[#ff4d2d] hover:bg-[#e64323]"
+              onClick={handleResetPassword}
+              disabled={loading}
+            >
+              {loading ? (
+                <ClipLoader size={20} color="white" />
+              ) : (
+                "Reset Password"
+              )}
             </button>
+            {error && (
+              <p className="text-red-500 text-center my-2.5">*{error}</p>
+            )}
           </div>
         )}
       </div>

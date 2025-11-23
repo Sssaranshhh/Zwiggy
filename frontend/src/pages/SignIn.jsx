@@ -4,6 +4,9 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverUrl } from "../App";
+import { auth } from "../../firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { ClipLoader } from "react-spinners";
 
 export default function SignUp() {
   const primaryColor = "#ff4d2d";
@@ -15,17 +18,45 @@ export default function SignUp() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSignIn = async () => {
+    setLoading(true);
     try {
-      const result = await axios.post(`${serverUrl}/api/auth/signin`, {
-        email, password
-      }, {withCredentials: true})
-      console.log(result)
+      const result = await axios.post(
+        `${serverUrl}/api/auth/signin`,
+        {
+          email,
+          password,
+        },
+        { withCredentials: true }
+      );
+      console.log(result);
+      setLoading(false);
     } catch (err) {
-      console.log(`Error in handleSignIn in Signin.jsx: ${err}`)
+      console.log(`Error in handleSignIn in Signin.jsx: ${err}`);
+      setLoading(false);
     }
-  }
+  };
+
+  const handleGoogleAuth = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    try {
+      const { data } = await axios.post(
+        `${serverUrl}/api/auth/google-auth`,
+        {
+          email: result.user.email,
+        },
+        { withCredentials: true }
+      );
+      console.log(data);
+      setError("");
+    } catch (err) {
+      setError(err?.response?.data?.message);
+    }
+  };
 
   return (
     <div
@@ -87,20 +118,28 @@ export default function SignUp() {
           </div>
         </div>
 
-        <div className="text-right mb-4 text-[#ff4d2d] font-medium cursor-pointer"
-        onClick={()=> navigate("/forgot-password")}>
+        <div
+          className="text-right mb-4 text-[#ff4d2d] font-medium cursor-pointer"
+          onClick={() => navigate("/forgot-password")}
+        >
           Forgot Password?
         </div>
-        
+
         <button
           className="w-full font-semibold rounded-lg py-2 transition duration-200 cursor-pointer text-white hover:bg-[#e64323]"
           style={{ backgroundColor: primaryColor }}
           onClick={handleSignIn}
+          disabled={loading}
         >
-          Sign In
+          {loading ? <ClipLoader size={20} color="white" /> : "Sign In"}
         </button>
 
-        <button className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-gray-400 hover:bg-gray-100 cursor-pointer">
+        {error && <p className="text-red-500 text-center my-2.5">*{error}</p>}
+
+        <button
+          className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-gray-400 hover:bg-gray-100 cursor-pointer"
+          onClick={handleGoogleAuth}
+        >
           <FcGoogle size={20} />
           <span>Sign In with Google</span>
         </button>

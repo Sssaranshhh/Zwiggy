@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
         type: String,
-        enum: ["User", "Owner", "Delivery Partner"],
+        enum: ["User", "Owner", "DeliveryPartner"],
         required: true
     },
     resetOtp: String,
@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    OtpExpires:{
+    otpExpires:{
       type: Date
     }
   },
